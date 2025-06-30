@@ -1,5 +1,5 @@
 -- SQL Code Sheet: Real Estate Listing & Price Trend Analysis Project
-
+✅ 1. Database & Table Creation
 -- 1. Create tables
 -- Table: locations
 CREATE TABLE locations (
@@ -44,65 +44,113 @@ CREATE TABLE sales (
 
 );
 
--- 2. Clean nulls and duplicates
-DELETE FROM properties WHERE property_id IS NULL;
-DELETE FROM transactions WHERE transaction_id IS NULL;
+✅ 2. CSV Import (with LOCAL INFILE)
 
--- 3. Average price per sqft by city
-SELECT 
-    city,
-    ROUND(AVG(price / area_sqft), 2) AS avg_price_per_sqft
-FROM properties
-GROUP BY city
-ORDER BY avg_price_per_sqft DESC;
+LOAD DATA LOCAL INFILE 'C:/path/locations.csv'
+INTO TABLE locations
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
 
--- 4. Top 5 cities with rising average prices month over month
-SELECT city, 
-       DATE_FORMAT(listed_date, '%Y-%m') AS month,
-       ROUND(AVG(price), 2) AS avg_price
-FROM properties
-GROUP BY city, month
-ORDER BY city, month;
+LOAD DATA LOCAL INFILE 'C:/path/agents.csv'
+INTO TABLE agents
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
 
--- 5. Price trend using window function
-SELECT 
-    city,
-    listed_date,
-    price,
-    ROUND(AVG(price) OVER (PARTITION BY city ORDER BY listed_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 2) AS rolling_avg_price
-FROM properties;
+LOAD DATA LOCAL INFILE 'C:/path/properties.csv'
+INTO TABLE properties
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
 
--- 6. Fastest selling regions
-SELECT 
-    city,
-    AVG(DATEDIFF(sale_date, listed_date)) AS avg_days_on_market
+LOAD DATA LOCAL INFILE 'C:/path/sales.csv'
+INTO TABLE sales
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+📊 3. Business Insight Queries
+ 🏙️ 3.1 Average Property Price by City
+SELECT l.city, ROUND(AVG(p.price), 2) AS avg_price
 FROM properties p
-JOIN transactions t ON p.property_id = t.property_id
-GROUP BY city
-ORDER BY avg_days_on_market ASC
-LIMIT 5;
+JOIN locations l ON p.location_id = l.location_id
+GROUP BY l.city
+ORDER BY avg_price DESC;
 
--- 7. View for latest KPIs by city
-CREATE VIEW city_kpis AS
+⏳ 3.2 Fastest Selling Properties (by days on market)
 SELECT 
-    city,
-    COUNT(*) AS total_listings,
-    ROUND(AVG(price), 2) AS avg_listing_price,
-    ROUND(AVG(price / area_sqft), 2) AS avg_price_per_sqft
-FROM properties
-GROUP BY city;
+    p.property_id,
+    DATEDIFF(s.sale_date, p.listing_date) AS days_on_market,
+    s.sale_price,
+    p.price AS listed_price,
+    l.city
+FROM properties p
+JOIN sales s ON p.property_id = s.property_id
+JOIN locations l ON p.location_id = l.location_id
+ORDER BY days_on_market ASC
+LIMIT 10;
 
--- 8. Identify top investment cities by price growth
-WITH city_growth AS (
-    SELECT city,
-           DATE_FORMAT(listed_date, '%Y-%m') AS month,
-           AVG(price) AS avg_price
-    FROM properties
-    GROUP BY city, month
-)
-SELECT city,
-       MAX(avg_price) - MIN(avg_price) AS price_growth
-FROM city_growth
-GROUP BY city
-ORDER BY price_growth DESC
+📈 3.3 Price Trends Over Time (Monthly)
+SELECT 
+    DATE_FORMAT(s.sale_date, '%Y-%m') AS month,
+    ROUND(AVG(s.sale_price), 2) AS avg_monthly_price
+FROM sales s
+GROUP BY month
+ORDER BY month;
+
+👨‍💼 3.4 Top 5 Performing Agents by Number of Properties Sold
+
+SELECT 
+    a.agent_id,
+    a.name,
+    COUNT(*) AS properties_sold
+FROM agents a
+JOIN properties p ON a.agent_id = p.agent_id
+JOIN sales s ON p.property_id = s.property_id
+GROUP BY a.agent_id, a.name
+ORDER BY properties_sold DESC
 LIMIT 5;
+
+🏘️ 3.5 Property Status Breakdown
+SELECT status, COUNT(*) AS count
+FROM properties
+GROUP BY status;
+
+🌍 3.6 City-wise Sales Count and Total Revenue
+SELECT 
+    l.city,
+    COUNT(s.sale_id) AS total_sales,
+    ROUND(SUM(s.sale_price), 2) AS total_revenue
+FROM sales s
+JOIN properties p ON s.property_id = p.property_id
+JOIN locations l ON p.location_id = l.location_id
+GROUP BY l.city
+ORDER BY total_revenue DESC;
+
+🧾 4. Bonus: Create a View for Reuse
+CREATE VIEW city_price_trends AS
+SELECT 
+    l.city,
+    DATE_FORMAT(s.sale_date, '%Y-%m') AS month,
+    ROUND(AVG(s.sale_price), 2) AS avg_price
+FROM sales s
+JOIN properties p ON s.property_id = p.property_id
+JOIN locations l ON p.location_id = l.location_id
+GROUP BY l.city, month;
+
+-- Example usage:
+SELECT * FROM city_price_trends WHERE city = 'New York';
+
+🧠 Summary:
+Project Name: Real Estate Listing & Price Trend Analysis
+Tools Used: MySQL, Python (Faker for data generation)
+Skills Highlighted:
+SQL joins, grouping, filtering, views
+Business trend analysis
+Data cleaning and loading automation
+Data modeling and relationship design
