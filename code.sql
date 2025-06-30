@@ -1,24 +1,47 @@
 -- SQL Code Sheet: Real Estate Listing & Price Trend Analysis Project
 
 -- 1. Create tables
-CREATE TABLE properties (
-    property_id INT PRIMARY KEY,
-    title VARCHAR(255),
-    location VARCHAR(100),
+-- Table: locations
+CREATE TABLE locations (
+    location_id INT PRIMARY KEY,
     city VARCHAR(100),
     state VARCHAR(100),
-    property_type VARCHAR(50),
-    area_sqft INT,
-    price DECIMAL(15,2),
-    listed_date DATE
+    pincode VARCHAR(20),
+    zone VARCHAR(20)
 );
 
-CREATE TABLE transactions (
-    transaction_id INT PRIMARY KEY,
+-- Table: agents
+CREATE TABLE agents (
+    agent_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    phone VARCHAR(30)
+);
+
+-- Table: properties
+CREATE TABLE properties (
+    property_id INT PRIMARY KEY,
+    location_id INT,
+    agent_id INT,
+    listing_date DATE,
+    price DECIMAL(12, 2),
+    bedrooms INT,
+    bathrooms INT,
+    sqft INT,
+    status VARCHAR(20),
+    FOREIGN KEY (location_id) REFERENCES locations(location_id),
+    FOREIGN KEY (agent_id) REFERENCES agents(agent_id)
+);
+
+-- Table: sales
+CREATE TABLE sales (
+    sale_id INT PRIMARY KEY,
     property_id INT,
-    sale_price DECIMAL(15,2),
     sale_date DATE,
+    sale_price DECIMAL(12,2),
     FOREIGN KEY (property_id) REFERENCES properties(property_id)
+);
+
 );
 
 -- 2. Clean nulls and duplicates
