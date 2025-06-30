@@ -1,84 +1,63 @@
-# 🏘️ Real Estate Listing & Price Trend Analysis (SQL + Python)
+# 🏠 Real Estate Listing & Price Trend Analysis
 
-This project focuses on analyzing real estate property listings using structured data stored in a MySQL database. The dataset was generated and preprocessed using Python and loaded into MySQL for analytical querying. The goal is to extract business-relevant insights such as price trends, investment opportunities, and market behavior using advanced SQL techniques.
-
----
-
-## 📁 Project Structure
-
-```
-real-estate-sql-analysis/
-├── real_estate_analysis.sql       # SQL queries and views
-├── data.py            # Python script to generate CSVs
-├── properties.csv                   # Property listing dataset
-├── transactions.csv               # Property transaction dataset
-└── README.md                      # Project overview and documentation
-```
+A full-scale data analytics project simulating a real-world real estate listing platform. This project demonstrates my ability to design relational schemas, generate realistic datasets, import data into MySQL, and extract business insights using complex SQL queries.
 
 ---
 
-## 🛠️ Tools & Technologies
-- **MySQL** for database design and querying
-- **Python (Pandas, Faker)** to generate and clean CSV datasets
-- **SQL**: JOINs, subqueries, GROUP BY, window functions, views
+## 📌 Project Objectives
+
+- Design a relational database for a real estate system
+- Generate synthetic real estate data using Python and Faker
+- Import and manage data in MySQL
+- Analyze price trends, agent performance, sales velocity, and market distribution using SQL
+- Prepare a query-ready database to support business decisions
 
 ---
 
-## 📌 Key Features
+## 📁 Dataset Structure
 
-### ✅ Database Schema
-- Two main tables: `properties` and `transactions`
-- Over **50,000 listings** with fields like location, price, area, and listing date
+Generated using a custom Python script (`data_generator.py`), the project simulates 500 property listings across various cities and zones.
 
-### ✅ SQL Analytics
-- Average price per square foot by city & property type
-- Monthly pricing trends using window functions
-- Fastest-selling regions and average time on market
-- Views for city-wise KPIs and investment opportunity detection
-
-### ✅ Business Insights Extracted
-- Cities with highest 6-month price appreciation
-- Neighborhoods with low time-on-market and high rental yield
-- Category-wise inventory patterns and pricing volatility
+| Table       | Description                                   |
+|-------------|-----------------------------------------------|
+| `locations` | City, state, pincode, zone classification     |
+| `agents`    | Agent contact information                     |
+| `properties`| Property details like price, size, listing date, etc. |
+| `sales`     | Sale information for sold properties          |
 
 ---
 
-## 🔍 Sample Queries Included
-- `AVG(price / area)` by city
-- Rolling 6-month `AVG(price)` using `OVER()` clause
-- `JOIN` with transactions to compute market velocity
-- Views for dashboards: `city_kpis`, `price_growth`, etc.
+## 🛠️ Technologies Used
+
+- **Python** (Faker, Pandas) – for synthetic data generation
+- **MySQL Workbench** – for relational schema and data import
+- **SQL** – for analytical querying
+- *(Optional)* Tableau / Streamlit – for future dashboarding
 
 ---
 
-## 📦 Dataset Generation
-- Python script (`generate_dataset.py`) generates realistic listing and transaction data
-- Data is saved as `listings.csv` and `transactions.csv`
-- Use any SQL client (MySQL Workbench, DBeaver) to import CSVs
+## 🔧 Setup Instructions
 
----
+### 1. Clone the repository
 
-## 🚀 Getting Started
-1. Clone the repo:
-2. Run `generate_dataset.py` to create the CSV files
-3. Import CSVs into MySQL
-4. Run `real_estate_analysis.sql` to build schema and execute queries
+### 2. Generate data using Python
+python data.py
+### This will generate:
+locations.csv
+agents.csv
+properties.csv
+sales.csv
 
----
+### 3. Workbench and run:
+CREATE DATABASE real_estate_db;
+USE real_estate_db;
 
-## 📈 Future Enhancements
-- Streamlit or Power BI dashboard using SQL views
-- Integrate GeoJSON for spatial analysis (heatmaps by region)
-- Add rental pricing data for ROI comparison
+### Then run the create_tables.sql file to create all tables.
+### 4. Import CSV files
+Make sure local_infile is enabled:
+SET GLOBAL local_infile = 1;
 
----
-
-## 📬 Contact
-**Sumanth Godari**  
-📧 godarisumanth1543@gmail.com  
-🔗 [LinkedIn](https://linkedin.com/in/sumanth-godari)  
-🔗 [GitHub](https://github.com/SUMANTH1543)
-
----
-
-> ⭐ *If you find this project useful, give it a star and share it with others in the data community!*
+### Then load data using:
+LOAD DATA LOCAL INFILE 'absolute/path/to/locations.csv'
+INTO TABLE locations
+FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
